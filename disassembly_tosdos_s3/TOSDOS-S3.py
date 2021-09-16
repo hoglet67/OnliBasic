@@ -1,6 +1,8 @@
 from commands import *
 from trace6502 import *
 
+config.set_label_references(False)
+
 # Load the program to be disassembled into the debugger's memory.
 # The md5sum is optional but helps avoid confusion if there are multiple versions
 # of the same program.
@@ -10,7 +12,8 @@ wordentry(0xfffa, 3)
 
 wordentry(0xff9c, 13)
 
-hook_subroutine(0xf009, "print_string", stringhi_hook)
+hook_subroutine(0xf000, "print_disk_space_string", stringhiz_hook)
+hook_subroutine(0xf009, "print_string", stringhiz_hook)
 
 label(0xf26c, "cmd_CAT")
 label(0xf266, "cmd_DIR")
@@ -33,7 +36,6 @@ label(0xf562, "cmd_EXEC")
 label(0xf8c3, "cmd_SHUT")
 label(0xf590, "cmd_SPOOL")
 label(0xf50e, "cmd_UNKNOWN")
-
 
 pc = 0xf3b2
 label(pc, "command_table")
