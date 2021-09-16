@@ -1,6 +1,6 @@
 #!/bin/bash
 
-export PYTHONPATH=../../py8dis/py8dis:$PATH
+export PYTHONPATH=../../py8dis/py8dis:../common:$PATH
 
 for i in disassembly_atom disassembly_system
 do

@@ -33,24 +33,18 @@ l0062 = &0062
 l0063 = &0063
 l0064 = &0064
 l0065 = &0065
-l0066 = &0066
-l0067 = &0067
-l0068 = &0068
-l0069 = &0069
-l006a = &006a
-l006b = &006b
-l006c = &006c
-l006d = &006d
-l008a = &008a
-l008b = &008b
-l008e = &008e
-l0090 = &0090
-l0091 = &0091
-l0093 = &0093
-l0094 = &0094
-l0096 = &0096
-l0098 = &0098
-l0099 = &0099
+time = &0066
+clk_count = &006a
+clk_result = &008a
+port_value = &008b
+port_last = &008e
+clk_enable = &0090
+port_enable = &0091
+clk_fired = &0093
+port_fired = &0094
+port_polarity = &0096
+clk_mask = &0098
+port_direction = &0099
 IRQVECL = &0204
 IRQVECH = &0205
 last_point_0 = &03c1
@@ -61,11 +55,13 @@ l03c5 = &03c5
 l03cd = &03cd
 l03dd = &03dd
 l03e5 = &03e5
-user_8154_bit_operations = &0900
-user_8154_port_a = &0920
-user_8154_port_b = &0921
-system_8154_port_b_keboard = &0e21
-vdu80_screen = &1000
+ins8154_0_bit_operations = &0900
+ins8154_0_port_a = &0920
+ins8154_0_port_b = &0921
+system_8154_port_b_keyboard = &0e21
+ins8154_1_bit_operations = &1000
+ins8154_1_port_a = &1020
+ins8154_1_port_b = &1021
 analog_8255_port_a = &1a00
 analog_8255_port_b = &1a01
 analog_8255_port_c = &1a02
@@ -218,7 +214,7 @@ oswrch = &fff4
     lda #&00                                                ; d0cf: a9 00
     ldx #&2f ; '/'                                          ; d0d1: a2 2f
 .ld0d3
-    sta l0066,x                                             ; d0d3: 95 66
+    sta time,x                                              ; d0d3: 95 66
     dex                                                     ; d0d5: ca
     bpl ld0d3                                               ; d0d6: 10 fb
     lda #&c0                                                ; d0d8: a9 c0
@@ -253,10 +249,10 @@ oswrch = &fff4
     lda l0052                                               ; d10e: a5 52
     cmp #&10                                                ; d110: c9 10
     bcs ld119                                               ; d112: b0 05
-    sta user_8154_bit_operations,x                          ; d114: 9d 00 09
+    sta ins8154_0_bit_operations,x                          ; d114: 9d 00 09
     bcc ld11c                                               ; d117: 90 03
 .ld119
-    sta vdu80_screen,x                                      ; d119: 9d 00 10
+    sta ins8154_1_bit_operations,x                          ; d119: 9d 00 10
 .ld11c
     jmp basic_next_command                                  ; d11c: 4c 5b c5
 .cmd_DEFPORT
@@ -268,79 +264,79 @@ oswrch = &fff4
     lda l0052                                               ; d12d: a5 52
     sta (l0056),y                                           ; d12f: 91 56
     ldy l0016,x                                             ; d131: b4 16
-    sta l0099,y                                             ; d133: 99 99 00
+    sta port_direction,y                                    ; d133: 99 99 00
     jmp basic_next_command                                  ; d136: 4c 5b c5
 .irq_handler
-    inc l0066                                               ; d139: e6 66
+    inc time                                                ; d139: e6 66
     bne ld147                                               ; d13b: d0 0a
-    inc l0067                                               ; d13d: e6 67
+    inc time+1                                              ; d13d: e6 67
     bne ld147                                               ; d13f: d0 06
-    inc l0068                                               ; d141: e6 68
+    inc time+2                                              ; d141: e6 68
     bne ld147                                               ; d143: d0 02
-    inc l0069                                               ; d145: e6 69
+    inc time+3                                              ; d145: e6 69
 .ld147
     txa                                                     ; d147: 8a
     pha                                                     ; d148: 48
     lda #&00                                                ; d149: a9 00
-    sta l008a                                               ; d14b: 85 8a
+    sta clk_result                                          ; d14b: 85 8a
     lda #&80                                                ; d14d: a9 80
-    sta l0098                                               ; d14f: 85 98
+    sta clk_mask                                            ; d14f: 85 98
     ldx #&1c                                                ; d151: a2 1c
 .ld153
-    lda l006a,x                                             ; d153: b5 6a
-    ora l006b,x                                             ; d155: 15 6b
-    ora l006c,x                                             ; d157: 15 6c
-    ora l006d,x                                             ; d159: 15 6d
+    lda clk_count,x                                         ; d153: b5 6a
+    ora clk_count+1,x                                       ; d155: 15 6b
+    ora clk_count+2,x                                       ; d157: 15 6c
+    ora clk_count+3,x                                       ; d159: 15 6d
     beq ld181                                               ; d15b: f0 24
-    lda l006a,x                                             ; d15d: b5 6a
+    lda clk_count,x                                         ; d15d: b5 6a
     bne ld16f                                               ; d15f: d0 0e
-    lda l006b,x                                             ; d161: b5 6b
+    lda clk_count+1,x                                       ; d161: b5 6b
     bne ld16d                                               ; d163: d0 08
-    lda l006c,x                                             ; d165: b5 6c
+    lda clk_count+2,x                                       ; d165: b5 6c
     bne ld16b                                               ; d167: d0 02
-    dec l006d,x                                             ; d169: d6 6d
+    dec clk_count+3,x                                       ; d169: d6 6d
 .ld16b
-    dec l006c,x                                             ; d16b: d6 6c
+    dec clk_count+2,x                                       ; d16b: d6 6c
 .ld16d
-    dec l006b,x                                             ; d16d: d6 6b
+    dec clk_count+1,x                                       ; d16d: d6 6b
 .ld16f
-    dec l006a,x                                             ; d16f: d6 6a
-    lda l006a,x                                             ; d171: b5 6a
-    ora l006b,x                                             ; d173: 15 6b
-    ora l006c,x                                             ; d175: 15 6c
-    ora l006d,x                                             ; d177: 15 6d
+    dec clk_count,x                                         ; d16f: d6 6a
+    lda clk_count,x                                         ; d171: b5 6a
+    ora clk_count+1,x                                       ; d173: 15 6b
+    ora clk_count+2,x                                       ; d175: 15 6c
+    ora clk_count+3,x                                       ; d177: 15 6d
     bne ld181                                               ; d179: d0 06
-    lda l008a                                               ; d17b: a5 8a
-    ora l0098                                               ; d17d: 05 98
-    sta l008a                                               ; d17f: 85 8a
+    lda clk_result                                          ; d17b: a5 8a
+    ora clk_mask                                            ; d17d: 05 98
+    sta clk_result                                          ; d17f: 85 8a
 .ld181
-    lsr l0098                                               ; d181: 46 98
+    lsr clk_mask                                            ; d181: 46 98
     dex                                                     ; d183: ca
     dex                                                     ; d184: ca
     dex                                                     ; d185: ca
     dex                                                     ; d186: ca
     bpl ld153                                               ; d187: 10 ca
-    lda l008a                                               ; d189: a5 8a
-    and l0090                                               ; d18b: 25 90
-    ora l0093                                               ; d18d: 05 93
-    sta l0093                                               ; d18f: 85 93
+    lda clk_result                                          ; d189: a5 8a
+    and clk_enable                                          ; d18b: 25 90
+    ora clk_fired                                           ; d18d: 05 93
+    sta clk_fired                                           ; d18f: 85 93
     ldx #&01                                                ; d191: a2 01
 .ld193
-    lda l0099,x                                             ; d193: b5 99
+    lda port_direction,x                                    ; d193: b5 99
     eor #&ff                                                ; d195: 49 ff
-    and user_8154_port_a,x                                  ; d197: 3d 20 09
+    and ins8154_0_port_a,x                                  ; d197: 3d 20 09
     pha                                                     ; d19a: 48
-    sta l008b,x                                             ; d19b: 95 8b
-    eor l008e,x                                             ; d19d: 55 8e
-    sta l008e,x                                             ; d19f: 95 8e
-    lda l0096,x                                             ; d1a1: b5 96
-    eor l008b,x                                             ; d1a3: 55 8b
-    and l008e,x                                             ; d1a5: 35 8e
-    and l0091,x                                             ; d1a7: 35 91
-    ora l0094,x                                             ; d1a9: 15 94
-    sta l0094,x                                             ; d1ab: 95 94
+    sta port_value,x                                        ; d19b: 95 8b
+    eor port_last,x                                         ; d19d: 55 8e
+    sta port_last,x                                         ; d19f: 95 8e
+    lda port_polarity,x                                     ; d1a1: b5 96
+    eor port_value,x                                        ; d1a3: 55 8b
+    and port_last,x                                         ; d1a5: 35 8e
+    and port_enable,x                                       ; d1a7: 35 91
+    ora port_fired,x                                        ; d1a9: 15 94
+    sta port_fired,x                                        ; d1ab: 95 94
     pla                                                     ; d1ad: 68
-    sta l008e,x                                             ; d1ae: 95 8e
+    sta port_last,x                                         ; d1ae: 95 8e
     dex                                                     ; d1b0: ca
     bpl ld193                                               ; d1b1: 10 e0
     pla                                                     ; d1b3: 68
@@ -358,11 +354,11 @@ oswrch = &fff4
     lda ld309,x                                             ; d1c5: bd 09 d3
     tax                                                     ; d1c8: aa
     tya                                                     ; d1c9: 98
-    and l0090,x                                             ; d1ca: 35 90
-    sta l0090,x                                             ; d1cc: 95 90
+    and clk_enable,x                                        ; d1ca: 35 90
+    sta clk_enable,x                                        ; d1cc: 95 90
     tya                                                     ; d1ce: 98
-    and l0093,x                                             ; d1cf: 35 93
-    sta l0093,x                                             ; d1d1: 95 93
+    and clk_fired,x                                         ; d1cf: 35 93
+    sta clk_fired,x                                         ; d1d1: 95 93
     plp                                                     ; d1d3: 28
     jmp basic_next_command                                  ; d1d4: 4c 5b c5
 .cmd_KILL
@@ -371,7 +367,7 @@ oswrch = &fff4
     ldx #&05                                                ; d1d9: a2 05
     lda #&00                                                ; d1db: a9 00
 .ld1dd
-    sta l0090,x                                             ; d1dd: 95 90
+    sta clk_enable,x                                        ; d1dd: 95 90
     dex                                                     ; d1df: ca
     bpl ld1dd                                               ; d1e0: 10 fb
     plp                                                     ; d1e2: 28
@@ -435,7 +431,7 @@ oswrch = &fff4
     sta l0065                                               ; d259: 85 65
     ldx #&01                                                ; d25b: a2 01
 .ld25d
-    lda l0099,x                                             ; d25d: b5 99
+    lda port_direction,x                                    ; d25d: b5 99
     eor #&ff                                                ; d25f: 49 ff
     and l0056,x                                             ; d261: 35 56
     sta l0054,x                                             ; d263: 95 54
@@ -454,7 +450,7 @@ oswrch = &fff4
     bne ld276                                               ; d277: d0 fd
     nop                                                     ; d279: ea
     nop                                                     ; d27a: ea
-    lda system_8154_port_b_keboard                          ; d27b: ad 21 0e
+    lda system_8154_port_b_keyboard                         ; d27b: ad 21 0e
     cmp #&1b                                                ; d27e: c9 1b
     beq ld2ed                                               ; d280: f0 6b
     clc                                                     ; d282: 18
@@ -477,10 +473,10 @@ oswrch = &fff4
     jsr ld2f3                                               ; d2a3: 20 f3 d2
 .ld2a6
     lda l0054                                               ; d2a6: a5 54
-    and user_8154_port_a                                    ; d2a8: 2d 20 09
+    and ins8154_0_port_a                                    ; d2a8: 2d 20 09
     bne ld2ed                                               ; d2ab: d0 40
     lda l0055                                               ; d2ad: a5 55
-    and user_8154_port_b                                    ; d2af: 2d 21 09
+    and ins8154_0_port_b                                    ; d2af: 2d 21 09
     bne ld2ed                                               ; d2b2: d0 39
     sec                                                     ; d2b4: 38
     lda l0062                                               ; d2b5: a5 62
@@ -573,12 +569,12 @@ oswrch = &fff4
     lda l0057                                               ; d35a: a5 57
     php                                                     ; d35c: 08
     sei                                                     ; d35d: 78
-    ora l0091,x                                             ; d35e: 15 91
-    sta l0091,x                                             ; d360: 95 91
+    ora port_enable,x                                       ; d35e: 15 91
+    sta port_enable,x                                       ; d360: 95 91
     lda l0057                                               ; d362: a5 57
     eor #&ff                                                ; d364: 49 ff
-    and l0094,x                                             ; d366: 35 94
-    sta l0094,x                                             ; d368: 95 94
+    and port_fired,x                                        ; d366: 35 94
+    sta port_fired,x                                        ; d368: 95 94
     stx l0056                                               ; d36a: 86 56
     ldx l0052                                               ; d36c: a6 52
     lda l0058                                               ; d36e: a5 58
@@ -591,13 +587,13 @@ oswrch = &fff4
     lda l0057                                               ; d37f: a5 57
     lsr l0052                                               ; d381: 46 52
     bcs ld389                                               ; d383: b0 04
-    ora l0096,x                                             ; d385: 15 96
+    ora port_polarity,x                                     ; d385: 15 96
     bcc ld38d                                               ; d387: 90 04
 .ld389
     eor #&ff                                                ; d389: 49 ff
-    and l0096,x                                             ; d38b: 35 96
+    and port_polarity,x                                     ; d38b: 35 96
 .ld38d
-    sta l0096,x                                             ; d38d: 95 96
+    sta port_polarity,x                                     ; d38d: 95 96
     plp                                                     ; d38f: 28
     jmp basic_next_command                                  ; d390: 4c 5b c5
 .ld393
@@ -629,12 +625,12 @@ oswrch = &fff4
     php                                                     ; d3c3: 08
     pha                                                     ; d3c4: 48
     sei                                                     ; d3c5: 78
-    ora l0090                                               ; d3c6: 05 90
-    sta l0090                                               ; d3c8: 85 90
+    ora clk_enable                                          ; d3c6: 05 90
+    sta clk_enable                                          ; d3c8: 85 90
     pla                                                     ; d3ca: 68
     eor #&ff                                                ; d3cb: 49 ff
-    and l0093                                               ; d3cd: 25 93
-    sta l0093                                               ; d3cf: 85 93
+    and clk_fired                                           ; d3cd: 25 93
+    sta clk_fired                                           ; d3cf: 85 93
     lda l0058                                               ; d3d1: a5 58
     sta l03c5,x                                             ; d3d3: 9d c5 03
     lda l0059                                               ; d3d6: a5 59
@@ -655,13 +651,13 @@ oswrch = &fff4
 .ld3f0
 ld3f1 = ld3f0+1
     ldx #&00                                                ; d3f0: a2 00
-    lda system_8154_port_b_keboard                          ; d3f2: ad 21 0e
+    lda system_8154_port_b_keyboard                         ; d3f2: ad 21 0e
     cmp #&1b                                                ; d3f5: c9 1b
     bne ld3fc                                               ; d3f7: d0 03
     jmp basic_warm_start                                    ; d3f9: 4c cf c2
 .ld3fc
     ldy #&00                                                ; d3fc: a0 00
-    lda l0093,x                                             ; d3fe: b5 93
+    lda clk_fired,x                                         ; d3fe: b5 93
 .ld400
     lsr a                                                   ; d400: 4a
     bcs ld40f                                               ; d401: b0 0c
@@ -676,8 +672,8 @@ ld3f1 = ld3f0+1
     lda ld32a,y                                             ; d40f: b9 2a d3
     eor #&ff                                                ; d412: 49 ff
     sei                                                     ; d414: 78
-    and l0093,x                                             ; d415: 35 93
-    sta l0093,x                                             ; d417: 95 93
+    and clk_fired,x                                         ; d415: 35 93
+    sta clk_fired,x                                         ; d417: 95 93
     cli                                                     ; d419: 58
     clc                                                     ; d41a: 18
     tya                                                     ; d41b: 98
