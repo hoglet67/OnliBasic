@@ -37,6 +37,25 @@ label(0xf8c3, "cmd_SHUT")
 label(0xf590, "cmd_SPOOL")
 label(0xf50e, "cmd_UNKNOWN")
 
+
+entry(0xffcb, "OSSHUT")
+entry(0xffce, "OSFIND")
+entry(0xffd1, "OSBPUT")
+entry(0xffd4, "OSBGET")
+entry(0xffd7, "OSSTAR")
+entry(0xffda, "OSRDAR")
+entry(0xffdd, "OSSAVE")
+entry(0xffe0, "OSLOAD")
+entry(0xffe3, "OSRDCH")
+entry(0xffe6, "OSECHO")
+entry(0xffe9, "OSASCI")
+entry(0xffed, "OSCRLF")
+entry(0xfff2, "OSWRCR")
+entry(0xfff4, "OSWRCH")
+entry(0xfff7, "OSCLI")
+
+byte(0xff8e, 14)
+
 pc = 0xf3b2
 label(pc, "command_table")
 expr_label(pc+1, "command_table+1")

@@ -72,8 +72,12 @@ l0208 = &0208
 l020a = &020a
 l020c = &020c
 l020e = &020e
+l0210 = &0210
+l0212 = &0212
+l0214 = &0214
 l0216 = &0216
 l0218 = &0218
+l021a = &021a
 l0400 = &0400
 l0500 = &0500
 l0600 = &0600
@@ -147,12 +151,12 @@ l221f = &221f
     lda (l00d8),y                                           ; f017: b1 d8
     bmi cf023                                               ; f019: 30 08
     beq cf023                                               ; f01b: f0 06
-    jsr cfff4                                               ; f01d: 20 f4 ff
+    jsr OSWRCH                                              ; f01d: 20 f4 ff
     jmp cf011                                               ; f020: 4c 11 f0
 .cf023
     jmp (l00d8)                                             ; f023: 6c d8 00
 .cf026
-    jsr cffed                                               ; f026: 20 ed ff
+    jsr OSCRLF                                              ; f026: 20 ed ff
 .cf029
     jsr print_string                                        ; f029: 20 09 f0
     equs "*"                                                ; f02c: 2a
@@ -166,7 +170,7 @@ l221f = &221f
     dex                                                     ; f034: ca
     bmi cf02d                                               ; f035: 30 f6
 .cf037
-    jsr cffe6                                               ; f037: 20 e6 ff
+    jsr OSECHO                                              ; f037: 20 e6 ff
     cmp #&18                                                ; f03a: c9 18
     beq cf026                                               ; f03c: f0 e8
     cmp #&7f                                                ; f03e: c9 7f
@@ -187,7 +191,7 @@ l221f = &221f
     adc #&06                                                ; f058: 69 06
 .cf05a
     adc #&30 ; '0'                                          ; f05a: 69 30
-    jmp cfff4                                               ; f05c: 4c f4 ff
+    jmp OSWRCH                                              ; f05c: 4c f4 ff
 .cf05f
     sty l00d7                                               ; f05f: 84 d7
     jsr cf06d                                               ; f061: 20 6d f0
@@ -310,7 +314,7 @@ l221f = &221f
     rts                                                     ; f120: 60
 .cf121
     lda #&20 ; ' '                                          ; f121: a9 20
-    jmp cfff4                                               ; f123: 4c f4 ff
+    jmp OSWRCH                                              ; f123: 4c f4 ff
 .cf126
     ldy #&06                                                ; f126: a0 06
 .cf128
@@ -450,17 +454,17 @@ l221f = &221f
 .cf1f4
     lda l200f,y                                             ; f1f4: b9 0f 20
     and #&7f                                                ; f1f7: 29 7f
-    jsr cfff4                                               ; f1f9: 20 f4 ff
+    jsr OSWRCH                                              ; f1f9: 20 f4 ff
     jsr cf121                                               ; f1fc: 20 21 f1
     ldx l200f,y                                             ; f1ff: be 0f 20
     bpl cf206                                               ; f202: 10 02
     lda #&23 ; '#'                                          ; f204: a9 23
 .cf206
-    jsr cfff4                                               ; f206: 20 f4 ff
+    jsr OSWRCH                                              ; f206: 20 f4 ff
     ldx #&07                                                ; f209: a2 07
 .cf20b
     lda l2008,y                                             ; f20b: b9 08 20
-    jsr cfff4                                               ; f20e: 20 f4 ff
+    jsr OSWRCH                                              ; f20e: 20 f4 ff
     iny                                                     ; f211: c8
     dex                                                     ; f212: ca
     bne cf20b                                               ; f213: d0 f6
@@ -489,7 +493,7 @@ l221f = &221f
     jsr cf052                                               ; f24c: 20 52 f0
     lda l2104,y                                             ; f24f: b9 04 21
     jsr cf04a                                               ; f252: 20 4a f0
-    jsr cffed                                               ; f255: 20 ed ff
+    jsr OSCRLF                                              ; f255: 20 ed ff
 .cf258
     jsr cf74d                                               ; f258: 20 4d f7
 .cf25b
@@ -512,7 +516,7 @@ l221f = &221f
     bcc cf27d                                               ; f278: 90 03
     lda l20f8,x                                             ; f27a: bd f8 20
 .cf27d
-    jsr cfff4                                               ; f27d: 20 f4 ff
+    jsr OSWRCH                                              ; f27d: 20 f4 ff
     inx                                                     ; f280: e8
     cpx #&0d                                                ; f281: e0 0d
     bne cf273                                               ; f283: d0 ee
@@ -523,7 +527,7 @@ l221f = &221f
     jsr print_string                                        ; f294: 20 09 f0
     equs " qual "                                           ; f297: 20 71 75 ...
     lda l00ef                                               ; f29d: a5 ef
-    jsr cfff4                                               ; f29f: 20 f4 ff
+    jsr OSWRCH                                              ; f29f: 20 f4 ff
     jsr print_string                                        ; f2a2: 20 09 f0
     equs " opt "                                            ; f2a5: 20 6f 70 ...
     lda l2106                                               ; f2aa: ad 06 21
@@ -540,7 +544,7 @@ l221f = &221f
     sta l2008,y                                             ; f2c2: 99 08 20
     tya                                                     ; f2c5: 98
     bne cf2ba                                               ; f2c6: d0 f2
-    jmp cffed                                               ; f2c8: 4c ed ff
+    jmp OSCRLF                                              ; f2c8: 4c ed ff
 .cf2cb
     jsr cf135                                               ; f2cb: 20 35 f1
 .cf2ce
@@ -553,7 +557,7 @@ l221f = &221f
 .cf2d9
     ldy l00b8                                               ; f2d9: a4 b8
     beq cf2e2                                               ; f2db: f0 05
-    jsr cffed                                               ; f2dd: 20 ed ff
+    jsr OSCRLF                                              ; f2dd: 20 ed ff
     ldy #&ff                                                ; f2e0: a0 ff
 .cf2e2
     iny                                                     ; f2e2: c8
@@ -566,11 +570,11 @@ l221f = &221f
     bmi cf2f3                                               ; f2ef: 30 02
     lda #&20 ; ' '                                          ; f2f1: a9 20
 .cf2f3
-    jsr cfff4                                               ; f2f3: 20 f4 ff
+    jsr OSWRCH                                              ; f2f3: 20 f4 ff
     ldx #&00                                                ; f2f6: a2 00
 .cf2f8
     lda l00ae,x                                             ; f2f8: b5 ae
-    jsr cfff4                                               ; f2fa: 20 f4 ff
+    jsr OSWRCH                                              ; f2fa: 20 f4 ff
     inx                                                     ; f2fd: e8
     cpx #&07                                                ; f2fe: e0 07
     bne cf2f8                                               ; f300: d0 f6
@@ -613,11 +617,11 @@ l221f = &221f
     cmp l00b6                                               ; f343: c5 b6
     beq cf2d9                                               ; f345: f0 92
     sta l00b6                                               ; f347: 85 b6
-    jsr cffed                                               ; f349: 20 ed ff
+    jsr OSCRLF                                              ; f349: 20 ed ff
     lda l00b5                                               ; f34c: a5 b5
-    jsr cfff4                                               ; f34e: 20 f4 ff
+    jsr OSWRCH                                              ; f34e: 20 f4 ff
     lda #&3a ; ':'                                          ; f351: a9 3a
-    jsr cfff4                                               ; f353: 20 f4 ff
+    jsr OSWRCH                                              ; f353: 20 f4 ff
     ldy #&04                                                ; f356: a0 04
     jsr cf128                                               ; f358: 20 28 f1
     sty l00b8                                               ; f35b: 84 b8
@@ -907,7 +911,7 @@ l221f = &221f
     jmp cf189                                               ; f55f: 4c 89 f1
 .cmd_EXEC
     jsr cf62c                                               ; f562: 20 2c f6
-    jsr cffce                                               ; f565: 20 ce ff
+    jsr OSFIND                                              ; f565: 20 ce ff
     tay                                                     ; f568: a8
     beq cf55f                                               ; f569: f0 f4
     sta l00b9                                               ; f56b: 85 b9
@@ -925,7 +929,7 @@ l221f = &221f
 .cmd_SPOOL
     jsr cf62c                                               ; f590: 20 2c f6
     clc                                                     ; f593: 18
-    jsr cffce                                               ; f594: 20 ce ff
+    jsr OSFIND                                              ; f594: 20 ce ff
     sta l00ba                                               ; f597: 85 ba
     jsr cf39c                                               ; f599: 20 9c f3
     lda #&a2                                                ; f59c: a9 a2
@@ -933,7 +937,7 @@ l221f = &221f
     bne cf574                                               ; f5a0: d0 d2
     sty l00d7                                               ; f5a2: 84 d7
     ldy l00ba                                               ; f5a4: a4 ba
-    jsr cffd1                                               ; f5a6: 20 d1 ff
+    jsr OSBPUT                                              ; f5a6: 20 d1 ff
     ldy l00d7                                               ; f5a9: a4 d7
     jmp (l00bb)                                             ; f5ab: 6c bb 00
 .cmd_GO
@@ -1046,7 +1050,7 @@ l221f = &221f
     jsr cf62f                                               ; f66d: 20 2f f6
     ldx #&dd                                                ; f670: a2 dd
     clc                                                     ; f672: 18
-    jmp cffdd                                               ; f673: 4c dd ff
+    jmp OSSAVE                                              ; f673: 4c dd ff
 .cf676
     php                                                     ; f676: 08
     jsr cf710                                               ; f677: 20 10 f7
@@ -1695,7 +1699,7 @@ lf9b2 = cf9b1+1
     rts                                                     ; fb05: 60
     equb &18, &79, &1f, &22, &69, &00, &d0, &f4             ; fb06: .y."i...
 .cfb0e
-    jsr cffe6                                               ; fb0e: 20 e6 ff
+    jsr OSECHO                                              ; fb0e: 20 e6 ff
     cmp #&04                                                ; fb11: c9 04
     beq cfb37                                               ; fb13: f0 22
     clc                                                     ; fb15: 18
@@ -1785,7 +1789,7 @@ lf9b2 = cf9b1+1
     rts                                                     ; fbde: 60
 .cfbdf
     pla                                                     ; fbdf: 68
-    jmp cffe9                                               ; fbe0: 4c e9 ff
+    jmp OSASCI                                              ; fbe0: 4c e9 ff
 .cfbe3
     cld                                                     ; fbe3: d8
     pha                                                     ; fbe4: 48
@@ -2275,18 +2279,17 @@ lf9b2 = cf9b1+1
 .cff7a
     ldx #&ff                                                ; ff7a: a2 ff
     txs                                                     ; ff7c: 9a
-    jsr cffed                                               ; ff7d: 20 ed ff
+    jsr OSCRLF                                              ; ff7d: 20 ed ff
 .cff80
     jsr cf029                                               ; ff80: 20 29 f0
-    jsr cfff7                                               ; ff83: 20 f7 ff
+    jsr OSCLI                                               ; ff83: 20 f7 ff
     jmp cff80                                               ; ff86: 4c 80 ff
 .lff89
     equs "BOOT"                                             ; ff89: 42 4f 4f ...
     equb &0d                                                ; ff8d: .
 .lff8e
-    equs "?(3D"                                             ; ff8e: 3f 28 33 ...
-    equb &1e, &02, &19, &1b, &03, &12, &72, &13             ; ff92: ......r.
-    equb &04, &00                                           ; ff9a: ..
+    equb &3f, &28, &33, &44, &1e, &02, &19, &1b             ; ff8e: ?(3D....
+    equb &03, &12, &72, &13, &04, &00                       ; ff96: ..r...
 .lff9c
     equw cff7a, cf531, cf42e, cfd7b, cfd53, cf4c0, cf676    ; ff9c: 7a ff 31 ...
     equw cfa88, cfcc7, cfb17, cfbe3, cf97a, cf8c5           ; ffa3: fd 53 fd ...
@@ -2304,43 +2307,50 @@ lf9b2 = cf9b1+1
     plp                                                     ; ffc6: 28
     php                                                     ; ffc7: 08
     jmp (l0202)                                             ; ffc8: 6c 02 02
-    equb &6c, &1a, &02                                      ; ffcb: l..
-.cffce
+.OSSHUT
+    jmp (l021a)                                             ; ffcb: 6c 1a 02
+.OSFIND
     jmp (l0218)                                             ; ffce: 6c 18 02
-.cffd1
+.OSBPUT
     jmp (l0216)                                             ; ffd1: 6c 16 02
-    equb &6c, &14, &02, &6c, &12, &02, &6c, &10             ; ffd4: l..l..l.
-    equb &02                                                ; ffdc: .
-.cffdd
+.OSBGET
+    jmp (l0214)                                             ; ffd4: 6c 14 02
+.OSSTAR
+    jmp (l0212)                                             ; ffd7: 6c 12 02
+.OSRDAR
+    jmp (l0210)                                             ; ffda: 6c 10 02
+.OSSAVE
     jmp (l020e)                                             ; ffdd: 6c 0e 02
-    equb &6c, &0c, &02                                      ; ffe0: l..
-.cffe3
+.OSLOAD
+    jmp (l020c)                                             ; ffe0: 6c 0c 02
+.OSRDCH
     jmp (l020a)                                             ; ffe3: 6c 0a 02
-.cffe6
-    jsr cffe3                                               ; ffe6: 20 e3 ff
-.cffe9
+.OSECHO
+    jsr OSRDCH                                              ; ffe6: 20 e3 ff
+.OSASCI
     cmp #&0d                                                ; ffe9: c9 0d
-    bne cfff4                                               ; ffeb: d0 07
-.cffed
+    bne OSWRCH                                              ; ffeb: d0 07
+.OSCRLF
     lda #&0a                                                ; ffed: a9 0a
-    jsr cfff4                                               ; ffef: 20 f4 ff
+    jsr OSWRCH                                              ; ffef: 20 f4 ff
+.OSWRCR
     lda #&0d                                                ; fff2: a9 0d
-.cfff4
+.OSWRCH
     jmp (l0208)                                             ; fff4: 6c 08 02
-.cfff7
+.OSCLI
     jmp (l0206)                                             ; fff7: 6c 06 02
     equw cf897, cff0d, cffb6                                ; fffa: 97 f8 0d ...
 .pydis_end
 
 ; Label references by decreasing frequency:
 ;     print_string:             14
-;     cfff4:                    14
+;     OSWRCH:                   14
 ;     cf130:                     9
 ;     cf25b:                     7
 ;     cf04a:                     6
 ;     cf121:                     6
 ;     cf549:                     6
-;     cffed:                     6
+;     OSCRLF:                    6
 ;     cf052:                     5
 ;     cf06d:                     5
 ;     cf0e1:                     5
@@ -2431,8 +2441,8 @@ lf9b2 = cf9b1+1
 ;     cfde9:                     2
 ;     cfded:                     2
 ;     cfed1:                     2
-;     cffce:                     2
-;     cffe6:                     2
+;     OSFIND:                    2
+;     OSECHO:                    2
 ;     l00f3:                     1
 ;     cf011:                     1
 ;     cf017:                     1
@@ -2639,11 +2649,11 @@ lf9b2 = cf9b1+1
 ;     cff6a:                     1
 ;     cff80:                     1
 ;     cffc4:                     1
-;     cffd1:                     1
-;     cffdd:                     1
-;     cffe3:                     1
-;     cffe9:                     1
-;     cfff7:                     1
+;     OSBPUT:                    1
+;     OSSAVE:                    1
+;     OSRDCH:                    1
+;     OSASCI:                    1
+;     OSCLI:                     1
     assert <(cmd_CAT) == &6c
     assert <(cmd_DELETE) == &63
     assert <(cmd_DIR) == &66
