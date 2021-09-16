@@ -1,0 +1,139 @@
+ONMI Basic Extension for the Acorn System and Acorn Atom
+
+written by P J Fray in 1980.
+
+based on the ONLI language developed by Stephen Lea at the Cambridge
+Psychological Laboratory circa 1970.
+
+Commands
+========
+
+These are available on all platforms:
+
+START
+   - initialize the system and set time to 0
+   - takes no parameters
+
+SEI
+   - disable interrupts (i.e. just executes SEI)
+   - takes no parameters
+
+CLI
+   - enable interrupts (i.e. just executes CLI)
+   - takes no parameters
+
+HANGUP
+   - block until next event
+   - takes no parameters
+
+REL <event nummber>
+   - release a specific event
+   - <event_number> 0..15 are input events and 16..23 are clock events
+
+KILL
+   - release all clock and input events
+
+RQIN <polarity>, <input number>, <line number or label>
+    - Generate an event when an input changes state
+    -
+
+RCLK <clock number>, <clock timeout>, <line number or label>
+    - General an event when a clock expires
+
+DEFPORT <port_num> = <port direction>
+    - Sets the direction of an 8-bit port
+    - <port_num> in the range 0..3 (addresses 0920, 0921, 1020, 2021)
+    - <port_direction> is a 8-bit mask, with 0 for input and 1 for output
+
+PORT <port_num> = <port direction>
+    - Sets the value of an 8-bit port
+    - <port_num> in the range 0..3 (addresses 0920, 0921, 1020, 1021)
+    - <port_value> is the 8-bit value to be written
+
+SET <output number>
+    - Set an individual output port bit
+    - <output number> is in the range 0..31
+
+CLR <output number>
+    - Clear an individual output port bit
+    - <output number> is in the range 0..31
+
+TIME <time>
+    - Set the current value of time
+
+DAC <dac_number>=<dac value>
+    - Writes a value to a DAC channel
+    - <dac number> in range 0..1
+    - <dac value> is a 12-bit value
+    - uses the 100,014 Anaog Interface at &1Axx
+
+Atom Specific Commands
+======================
+
+This works on the Atom's bitmapped display:
+
+COLOUR <mode>
+    - Same a COLOUR <n> in the Atom FP ROM
+    - <mode> is 0..3
+    - installs a colour mode specific plotting function
+
+System Specific Commands
+========================
+
+These work on the System 40x25 VDU at 0x0400, giving a 80x120 bitmap
+display:
+
+CLEAR <value>
+    - Writes (value ^ 0x17) to the column 0 each of the 25 text rows
+    - in preparation for drawing graphics.
+    - 1 = red graphics
+    - 2 = green graphics
+    - 3 = yellow graphics
+    - 4 = blue graphics
+    - 5 = magenta graphics
+    - 6 = cyan graphics
+    - 7 = white graphics
+
+PLOT <mode>, <x>, <y>
+    - <mode> has value 0..15
+        - b3:b2 00=plot line relative  b1:b0 00=no change in pixels (move)
+        -       01=plot line absolute        01=set pixels
+        -       10=plot point relative       10=invert pixels
+        -       11=plot point absolute       11=clear pixels
+    - <x> in range 0..79
+    - <y> in range 0..119
+
+MOVE <x>, <y>
+    - System only - works on the 40x25 VDU interface at 0x400
+    - same as PLOT <12>, <x>, <y>
+
+DRAW <x>, <y>
+    - System only - works on the 40x25 VDU interface at 0x400
+    - same as PLOT <5>, <x>, <y>
+
+Functions
+=========
+
+These are available on all platforms
+
+= ADC <adc number>
+    - Reads a value from an ADC channel
+    - <adc_number> in range 0..7
+    - returns a 12-bit value
+    - uses the 100,014 Anaog Interface at &1Axx
+
+= TIME
+    - Get the current value of time
+    - Time is incremented by the 200us timer interrupt
+
+= PORT <port number>
+    - Read the current value of an input port
+    - <port_num> in the range 0..3 (addresses 0920, 0921, 1020, 1021)
+    - returns an 8-bit port number
+
+= REACT <a>,<b>,<c>,<d>
+    - Measures Reaction Time
+    - <a> : 32-bit output value for output event (0056)
+    - <b> : 16-bit input mask for exit event     (0054)
+    - <c> : 32-bit down counter for timeout      (005e)
+    - <d> : 32-bit down counter for output event (005a)
