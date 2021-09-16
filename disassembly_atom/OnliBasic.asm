@@ -262,7 +262,7 @@ oswrch = &fff4
     lda l0052                                               ; d11c: a5 52
     sta (l0056),y                                           ; d11e: 91 56
     ldy l0016,x                                             ; d120: b4 16
-    equb &99, <(l0099), >(l0099) ; sta+2 l0099,y            ; d122: 99 99 00
+    sta l0099,y                                             ; d122: 99 99 00
     jmp basic_next_command                                  ; d125: 4c 5b c5
 .irq_handler
     inc l0066                                               ; d128: e6 66
