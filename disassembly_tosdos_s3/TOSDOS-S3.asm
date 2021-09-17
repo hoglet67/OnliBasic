@@ -68,7 +68,6 @@ NMIVEC = &0200
 BRKVEC = &0202
 IRQVEC = &0204
 COMVEC = &0206
-l0207 = &0207
 WRCVEC = &0208
 RDCVEC = &020a
 LODVEC = &020c
@@ -925,7 +924,7 @@ l221f = &221f
 .cf574
     sta COMVEC,x                                            ; f574: 9d 06 02
     tya                                                     ; f577: 98
-    sta l0207,x                                             ; f578: 9d 07 02
+    sta COMVEC+1,x                                          ; f578: 9d 07 02
     rts                                                     ; f57b: 60
 .rdch_exec
     sty l00d7                                               ; f57c: 84 d7
