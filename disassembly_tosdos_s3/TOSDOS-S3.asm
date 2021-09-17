@@ -57,27 +57,28 @@ l00f0 = &00f0
 l00f1 = &00f1
 l00f2 = &00f2
 l00f3 = &00f3
+l00f6 = &00f6
 l00f7 = &00f7
 l00f8 = &00f8
 l00fe = &00fe
 l00ff = &00ff
 l0100 = &0100
 l0140 = &0140
-l0200 = &0200
-l0202 = &0202
-l0204 = &0204
-l0206 = &0206
+NMIVEC = &0200
+BRKVEC = &0202
+IRQVEC = &0204
+COMVEC = &0206
 l0207 = &0207
-l0208 = &0208
-l020a = &020a
-l020c = &020c
-l020e = &020e
-l0210 = &0210
-l0212 = &0212
-l0214 = &0214
-l0216 = &0216
-l0218 = &0218
-l021a = &021a
+WRCVEC = &0208
+RDCVEC = &020a
+LODVEC = &020c
+SAVVEC = &020e
+RDRVEC = &0210
+STRVEC = &0212
+BGTVEC = &0214
+BPTVEC = &0216
+FNDVEC = &0218
+SHTVEC = &021a
 l0400 = &0400
 l0500 = &0500
 l0600 = &0600
@@ -86,10 +87,12 @@ l0800 = &0800
 l0801 = &0801
 l0a00 = &0a00
 l0a01 = &0a01
+l0a04 = &0a04
 l0c01 = &0c01
 l0c03 = &0c03
 l0c0c = &0c0c
 l0e21 = &0e21
+l1fff = &1fff
 l2000 = &2000
 l2007 = &2007
 l2008 = &2008
@@ -664,10 +667,10 @@ l221f = &221f
 .cf39e
     sty l00bf                                               ; f39e: 84 bf
 .cf3a0
-    ldy l0208,x                                             ; f3a0: bc 08 02
+    ldy WRCVEC,x                                            ; f3a0: bc 08 02
     lda l00bb,x                                             ; f3a3: b5 bb
     sty l00bb,x                                             ; f3a5: 94 bb
-    sta l0208,x                                             ; f3a7: 9d 08 02
+    sta WRCVEC,x                                            ; f3a7: 9d 08 02
     inx                                                     ; f3aa: e8
     txa                                                     ; f3ab: 8a
     lsr a                                                   ; f3ac: 4a
@@ -737,7 +740,7 @@ l221f = &221f
     equb <(cmd_SPOOL)                                       ; f42b: .
     equb >(cmd_UNKNOWN)                                     ; f42c: .
     equb <(cmd_UNKNOWN)                                     ; f42d: .
-.cf42e
+.default_COMVEC
     ldx #&ff                                                ; f42e: a2 ff
     cld                                                     ; f430: d8
 .cf431
@@ -823,8 +826,8 @@ l221f = &221f
 .cf4ba
     ldx #&dd                                                ; f4ba: a2 dd
     clc                                                     ; f4bc: 18
-    jmp (l020c)                                             ; f4bd: 6c 0c 02
-.cf4c0
+    jmp (LODVEC)                                            ; f4bd: 6c 0c 02
+.default_LODVEC
     php                                                     ; f4c0: 08
     jsr cf4cd                                               ; f4c1: 20 cd f4
 .cf4c4
@@ -852,6 +855,7 @@ l221f = &221f
     bne cf4dc                                               ; f4e5: d0 f5
     ldy l00dd                                               ; f4e7: a4 dd
     jsr cf1f0                                               ; f4e9: 20 f0 f1
+.cf4ec
     jsr cf7ae                                               ; f4ec: 20 ae f7
     lda #&53 ; 'S'                                          ; f4ef: a9 53
 .cf4f1
@@ -886,7 +890,7 @@ l221f = &221f
     jsr cf192                                               ; f529: 20 92 f1
     bcs cf53d                                               ; f52c: b0 0f
     jsr cf549                                               ; f52e: 20 49 f5
-.cf531
+.default_IRQVEC
     jsr print_string                                        ; f531: 20 09 f0
     equs "Command?"                                         ; f534: 43 6f 6d ...
     brk                                                     ; f53c: 00
@@ -916,25 +920,34 @@ l221f = &221f
     beq cf55f                                               ; f569: f0 f4
     sta l00b9                                               ; f56b: 85 b9
     jsr cf398                                               ; f56d: 20 98 f3
-    lda #&7c ; '|'                                          ; f570: a9 7c
-    ldy #&f5                                                ; f572: a0 f5
+    lda #<rdch_exec ; '|'                                   ; f570: a9 7c
+    ldy #>rdch_exec                                         ; f572: a0 f5
 .cf574
-    sta l0206,x                                             ; f574: 9d 06 02
+    sta COMVEC,x                                            ; f574: 9d 06 02
     tya                                                     ; f577: 98
     sta l0207,x                                             ; f578: 9d 07 02
     rts                                                     ; f57b: 60
-    equb &84, &d7, &a4, &b9, &20, &d4, &ff, &90             ; f57c: .... ...
-    equb &08, &20, &cb, &ff, &a4, &d7, &6c, &0a             ; f584: . ....l.
-    equb &02, &a4, &d7, &60                                 ; f58c: ...`
+.rdch_exec
+    sty l00d7                                               ; f57c: 84 d7
+    ldy l00b9                                               ; f57e: a4 b9
+    jsr OSBGET                                              ; f580: 20 d4 ff
+    bcc cf58d                                               ; f583: 90 08
+    jsr OSSHUT                                              ; f585: 20 cb ff
+    ldy l00d7                                               ; f588: a4 d7
+    jmp (RDCVEC)                                            ; f58a: 6c 0a 02
+.cf58d
+    ldy l00d7                                               ; f58d: a4 d7
+    rts                                                     ; f58f: 60
 .cmd_SPOOL
     jsr cf62c                                               ; f590: 20 2c f6
     clc                                                     ; f593: 18
     jsr OSFIND                                              ; f594: 20 ce ff
     sta l00ba                                               ; f597: 85 ba
     jsr cf39c                                               ; f599: 20 9c f3
-    lda #&a2                                                ; f59c: a9 a2
-    ldy #&f5                                                ; f59e: a0 f5
+    lda #<wrch_spool                                        ; f59c: a9 a2
+    ldy #>wrch_spool                                        ; f59e: a0 f5
     bne cf574                                               ; f5a0: d0 d2
+.wrch_spool
     sty l00d7                                               ; f5a2: 84 d7
     ldy l00ba                                               ; f5a4: a4 ba
     jsr OSBPUT                                              ; f5a6: 20 d1 ff
@@ -1051,7 +1064,7 @@ l221f = &221f
     ldx #&dd                                                ; f670: a2 dd
     clc                                                     ; f672: 18
     jmp OSSAVE                                              ; f673: 4c dd ff
-.cf676
+.default_SAVVEC
     php                                                     ; f676: 08
     jsr cf710                                               ; f677: 20 10 f7
     jmp cf4c4                                               ; f67a: 4c c4 f4
@@ -1133,6 +1146,7 @@ l221f = &221f
     jmp cf25b                                               ; f70d: 4c 5b f2
 .cf710
     jsr cf67d                                               ; f710: 20 7d f6
+.cf713
     jsr cf7b2                                               ; f713: 20 b2 f7
     lda #&4b ; 'K'                                          ; f716: a9 4b
     jmp cf4f1                                               ; f718: 4c f1 f4
@@ -1143,16 +1157,16 @@ l221f = &221f
     lda #&02                                                ; f721: a9 02
     sta l00f2                                               ; f723: 85 f2
     ldy #&16                                                ; f725: a0 16
-    lda #&45 ; 'E'                                          ; f727: a9 45
+    lda #<nmi_other ; 'E'                                   ; f727: a9 45
     sta l00d5                                               ; f729: 85 d5
-    lda #&f7                                                ; f72b: a9 f7
+    lda #>nmi_other                                         ; f72b: a9 f7
     sta l00d6                                               ; f72d: 85 d6
 .cf72f
-    lda lf87e,y                                             ; f72f: b9 7e f8
+    lda i8271_commands,y                                    ; f72f: b9 7e f8
     jsr cf7ee                                               ; f732: 20 ee f7
 .cf735
     iny                                                     ; f735: c8
-    lda lf87e,y                                             ; f736: b9 7e f8
+    lda i8271_commands,y                                    ; f736: b9 7e f8
     cmp #&ea                                                ; f739: c9 ea
     beq cf743                                               ; f73b: f0 06
     jsr cf825                                               ; f73d: 20 25 f8
@@ -1160,7 +1174,11 @@ l221f = &221f
 .cf743
     iny                                                     ; f743: c8
     rts                                                     ; f744: 60
-    equb &20, &00, &f8, &a9, &0a, &85, &f1, &60             ; f745:  ......`
+.nmi_other
+    jsr cf800                                               ; f745: 20 00 f8
+    lda #&0a                                                ; f748: a9 0a
+    sta l00f1                                               ; f74a: 85 f1
+    rts                                                     ; f74c: 60
 .cf74d
     jsr cf796                                               ; f74d: 20 96 f7
     bne cf765                                               ; f750: d0 13
@@ -1193,7 +1211,7 @@ l221f = &221f
     jsr cf7f7                                               ; f782: 20 f7 f7
     lda #&23 ; '#'                                          ; f785: a9 23
     jsr cf825                                               ; f787: 20 25 f8
-    lda lf7aa,y                                             ; f78a: b9 aa f7
+    lda i8271_select,y                                      ; f78a: b9 aa f7
     jsr cf825                                               ; f78d: 20 25 f8
 .cf790
     jsr cf796                                               ; f790: 20 96 f7
@@ -1210,7 +1228,9 @@ l221f = &221f
 .cf7a7
     and #&04                                                ; f7a7: 29 04
     rts                                                     ; f7a9: 60
-.lf7aa
+; 8271 drive select table
+; Maps the logical drive number 0..3 to drive (b7) and side (b5)
+.i8271_select
     equb &48, &88, &68, &a8                                 ; f7aa: H.h.
 .cf7ae
     ldy #&0a                                                ; f7ae: a0 0a
@@ -1220,7 +1240,7 @@ l221f = &221f
 .cf7b4
     ldx #&0b                                                ; f7b4: a2 0b
 .cf7b6
-    lda lf86b,y                                             ; f7b6: b9 6b f8
+    lda nmi_load,y                                          ; f7b6: b9 6b f8
     sta l00f2,x                                             ; f7b9: 95 f2
     dey                                                     ; f7bb: 88
     dex                                                     ; f7bc: ca
@@ -1328,17 +1348,29 @@ l221f = &221f
     lda l00ca                                               ; f866: a5 ca
     sta l00f8                                               ; f868: 85 f8
     rts                                                     ; f86a: 60
-.lf86b
-    equb &ad, &04, &0a, &8d, &ff, &1f                       ; f86b: ......
-    equs "h@L"                                              ; f871: 68 40 4c
-    equb &f6, &00, &ad, &ff, &1f, &8d, &04, &0a             ; f874: ........
-.lf87c
-lf87e = lf87c+2
-    equs "h@5"                                              ; f87c: 68 40 35
-    equb &0d, &0d, &08, &c5, &ea, &35, &10, &ff             ; f87f: .....5..
-    equb &ff, &00, &ea, &35, &18, &ff, &ff, &00             ; f887: ...5....
-    equb &ea, &3a, &17, &c1, &ea, &69, &00, &ea             ; f88f: .:...i..
-.cf897
+; NMI load data transfer code
+; This is copied/executed from 00f3
+; The address at 00f6/7 is incremented each byte transferred
+.nmi_load
+    lda l0a04                                               ; f86b: ad 04 0a
+    sta l1fff                                               ; f86e: 8d ff 1f
+    pla                                                     ; f871: 68
+    rti                                                     ; f872: 40
+; NMI save data transfer code
+; This is copied/executed from 00f3
+; The address at 00f6/7 is incremented each byte transferred
+.nmi_save
+    jmp l00f6                                               ; f873: 4c f6 00
+    equb &ad, &ff, &1f, &8d, &04, &0a, &68, &40             ; f876: ......h@
+; 8271 command table
+; Contains several 8271 commands, each terminate by EA bytes
+.i8271_commands
+    equb &35, &0d, &0d, &08, &c5, &ea                       ; f87e: 5.....
+    equb &35, &10, &ff, &ff, &00, &ea                       ; f884: 5.....
+    equb &35, &18, &ff, &ff, &00, &ea                       ; f88a: 5.....
+    equb &3a, &17, &c1, &ea                                 ; f890: :...
+    equb &69, &00, &ea                                      ; f894: i..
+.nmi_handler
     pha                                                     ; f897: 48
     lda l0a00                                               ; f898: ad 00 0a
     and #&04                                                ; f89b: 29 04
@@ -1352,7 +1384,7 @@ lf87e = lf87c+2
     lda l0a00                                               ; f8a8: ad 00 0a
     and #&08                                                ; f8ab: 29 08
     bne cf8b2                                               ; f8ad: d0 03
-    jmp (l0200)                                             ; f8af: 6c 00 02
+    jmp (NMIVEC)                                            ; f8af: 6c 00 02
 .cf8b2
     txa                                                     ; f8b2: 8a
     pha                                                     ; f8b3: 48
@@ -1370,7 +1402,7 @@ lf87e = lf87c+2
     jmp (l00d5)                                             ; f8c0: 6c d5 00
 .cmd_SHUT
     ldy #&00                                                ; f8c3: a0 00
-.cf8c5
+.default_SHTVEC
     pha                                                     ; f8c5: 48
     cld                                                     ; f8c6: d8
     tya                                                     ; f8c7: 98
@@ -1380,7 +1412,7 @@ lf87e = lf87c+2
     adc #&20 ; ' '                                          ; f8cb: 69 20
     beq cf8d7                                               ; f8cd: f0 08
     tay                                                     ; f8cf: a8
-    jsr cf8c5                                               ; f8d0: 20 c5 f8
+    jsr default_SHTVEC                                      ; f8d0: 20 c5 f8
     bne cf8ca                                               ; f8d3: d0 f5
 .cf8d5
     ldx l00c6                                               ; f8d5: a6 c6
@@ -1467,7 +1499,7 @@ lf87e = lf87c+2
     sta l00ef                                               ; f972: 85 ef
     lda l2217,y                                             ; f974: b9 17 22
     jmp cf488                                               ; f977: 4c 88 f4
-.cf97a
+.default_FNDVEC
     cld                                                     ; f97a: d8
     tya                                                     ; f97b: 98
     pha                                                     ; f97c: 48
@@ -1477,6 +1509,7 @@ lf87e = lf87c+2
 .cf980
 lf981 = cf980+1
     lda l0000,x                                             ; f980: b5 00
+; overlapping: brk                                          ; f981: 00
     sta l00dd                                               ; f982: 85 dd
     lda l0001,x                                             ; f984: b5 01
     sta l00de                                               ; f986: 85 de
@@ -1506,6 +1539,7 @@ lf981 = cf980+1
 .cf9b1
 lf9b2 = cf9b1+1
     lda #&00                                                ; f9b1: a9 00
+; overlapping: brk                                          ; f9b2: 00
     sta l00c2                                               ; f9b3: 85 c2
     ldy #&a0                                                ; f9b5: a0 a0
     lda #&08                                                ; f9b7: a9 08
@@ -1531,7 +1565,7 @@ lf9b2 = cf9b1+1
     bne cf9c6                                               ; f9db: d0 e9
     ldy l00c4                                               ; f9dd: a4 c4
     ldx l00c6                                               ; f9df: a6 c6
-    jsr cf8c5                                               ; f9e1: 20 c5 f8
+    jsr default_SHTVEC                                      ; f9e1: 20 c5 f8
     pla                                                     ; f9e4: 68
 .cf9e5
     sty l00c2                                               ; f9e5: 84 c2
@@ -1618,7 +1652,7 @@ lf9b2 = cf9b1+1
     lda #&20 ; ' '                                          ; fa81: a9 20
     sta l2217,y                                             ; fa83: 99 17 22
     bne cfa67                                               ; fa86: d0 df
-.cfa88
+.default_RDRVEC
     pha                                                     ; fa88: 48
     sty l00c2                                               ; fa89: 84 c2
     asl a                                                   ; fa8b: 0a
@@ -1695,27 +1729,32 @@ lf9b2 = cf9b1+1
     sta l221f,y                                             ; fafa: 99 1f 22
     jsr cfac4                                               ; fafd: 20 c4 fa
     eor #&ff                                                ; fb00: 49 ff
+.cfb02
     sta l221f,y                                             ; fb02: 99 1f 22
     rts                                                     ; fb05: 60
-    equb &18, &79, &1f, &22, &69, &00, &d0, &f4             ; fb06: .y."i...
+.cfb06
+    clc                                                     ; fb06: 18
+    adc l221f,y                                             ; fb07: 79 1f 22
+    adc #&00                                                ; fb0a: 69 00
+    bne cfb02                                               ; fb0c: d0 f4
 .cfb0e
     jsr OSECHO                                              ; fb0e: 20 e6 ff
     cmp #&04                                                ; fb11: c9 04
     beq cfb37                                               ; fb13: f0 22
     clc                                                     ; fb15: 18
     rts                                                     ; fb16: 60
-.cfb17
+.default_BGTVEC
     cld                                                     ; fb17: d8
     tya                                                     ; fb18: 98
     beq cfb0e                                               ; fb19: f0 f3
     jsr cfaa3                                               ; fb1b: 20 a3 fa
-    bcs cfb5b                                               ; fb1e: b0 3b
+    bcs lfb5b                                               ; fb1e: b0 3b
     tya                                                     ; fb20: 98
     jsr cfd21                                               ; fb21: 20 21 fd
     bne cfb3b                                               ; fb24: d0 15
     lda l2217,y                                             ; fb26: b9 17 22
     and #&10                                                ; fb29: 29 10
-    bne cfb7c                                               ; fb2b: d0 4f
+    bne lfb7c                                               ; fb2b: d0 4f
     lda #&10                                                ; fb2d: a9 10
     jsr cfb8e                                               ; fb2f: 20 8e fb
     jsr cfaf8                                               ; fb32: 20 f8 fa
@@ -1738,17 +1777,33 @@ lf9b2 = cf9b1+1
     sta l00dd                                               ; fb53: 85 dd
     lda l2213,y                                             ; fb55: b9 13 22
     sta l00de                                               ; fb58: 85 de
-    equb &a0                                                ; fb5a: .
-.cfb5b
-    brk                                                     ; fb5b: 00
-    equb &b1, &dd, &48, &a4, &c2, &a9, &fe, &20             ; fb5c: ..H.... 
-    equb &06, &fb, &a6, &dd, &e8, &8a, &99, &10             ; fb64: ........
-    equb &22, &d0, &19, &18, &b9, &11, &22, &69             ; fb6c: "....."i
-    equb &01, &99, &11, &22, &b9, &12, &22, &69             ; fb74: ...".."i
-.cfb7c
-    brk                                                     ; fb7c: 00
-    equb &99, &12, &22, &20, &93, &fb, &a9, &80             ; fb7d: .." ....
-    equb &20, &06, &fb                                      ; fb85:  ..
+.cfb5a
+lfb5b = cfb5a+1
+    ldy #&00                                                ; fb5a: a0 00
+; overlapping: brk                                          ; fb5b: 00
+    lda (l00dd),y                                           ; fb5c: b1 dd
+    pha                                                     ; fb5e: 48
+    ldy l00c2                                               ; fb5f: a4 c2
+    lda #&fe                                                ; fb61: a9 fe
+    jsr cfb06                                               ; fb63: 20 06 fb
+    ldx l00dd                                               ; fb66: a6 dd
+    inx                                                     ; fb68: e8
+    txa                                                     ; fb69: 8a
+    sta l2210,y                                             ; fb6a: 99 10 22
+    bne cfb88                                               ; fb6d: d0 19
+    clc                                                     ; fb6f: 18
+    lda l2211,y                                             ; fb70: b9 11 22
+    adc #&01                                                ; fb73: 69 01
+    sta l2211,y                                             ; fb75: 99 11 22
+    lda l2212,y                                             ; fb78: b9 12 22
+.cfb7b
+lfb7c = cfb7b+1
+    adc #&00                                                ; fb7b: 69 00
+; overlapping: brk                                          ; fb7c: 00
+    sta l2212,y                                             ; fb7d: 99 12 22
+    jsr cfb93                                               ; fb80: 20 93 fb
+    lda #&80                                                ; fb83: a9 80
+    jsr cfb06                                               ; fb85: 20 06 fb
 .cfb88
     clc                                                     ; fb88: 18
     jmp cf8d5                                               ; fb89: 4c d5 f8
@@ -1776,30 +1831,46 @@ lf9b2 = cf9b1+1
     ldy l00c2                                               ; fba9: a4 c2
     lda l2213,y                                             ; fbab: b9 13 22
     sta l00e0                                               ; fbae: 85 e0
-    equb &a9                                                ; fbb0: .
-.cfbb1
-    brk                                                     ; fbb1: 00
-    equb &85, &df, &85, &e3, &a9, &01, &85, &e4             ; fbb2: ........
-    equb &28, &b0, &16, &b9, &1c, &22, &85, &e6             ; fbba: (...."..
-    equb &b9, &1d, &22, &85, &e5, &20, &13, &f7             ; fbc2: ..".. ..
-    equb &a4, &c2, &a9, &bf, &20, &95, &fb, &90             ; fbca: .... ...
-    equb &06, &20, &dc, &fa, &20, &ec, &f4, &20             ; fbd2: . .. .. 
-    equb &5b, &f2, &a4, &c2                                 ; fbda: [...
+.cfbb0
+lfbb1 = cfbb0+1
+    lda #&00                                                ; fbb0: a9 00
+; overlapping: brk                                          ; fbb1: 00
+    sta l00df                                               ; fbb2: 85 df
+    sta l00e3                                               ; fbb4: 85 e3
+    lda #&01                                                ; fbb6: a9 01
+    sta l00e4                                               ; fbb8: 85 e4
+    plp                                                     ; fbba: 28
+    bcs cfbd3                                               ; fbbb: b0 16
+    lda l221c,y                                             ; fbbd: b9 1c 22
+    sta l00e6                                               ; fbc0: 85 e6
+    lda l221d,y                                             ; fbc2: b9 1d 22
+    sta l00e5                                               ; fbc5: 85 e5
+    jsr cf713                                               ; fbc7: 20 13 f7
+    ldy l00c2                                               ; fbca: a4 c2
+    lda #&bf                                                ; fbcc: a9 bf
+    jsr cfb95                                               ; fbce: 20 95 fb
+    bcc cfbd9                                               ; fbd1: 90 06
+.cfbd3
+    jsr cfadc                                               ; fbd3: 20 dc fa
+    jsr cf4ec                                               ; fbd6: 20 ec f4
+.cfbd9
+    jsr cf25b                                               ; fbd9: 20 5b f2
+    ldy l00c2                                               ; fbdc: a4 c2
 .cfbde
     rts                                                     ; fbde: 60
 .cfbdf
     pla                                                     ; fbdf: 68
     jmp OSASCI                                              ; fbe0: 4c e9 ff
-.cfbe3
+.default_BPTVEC
     cld                                                     ; fbe3: d8
     pha                                                     ; fbe4: 48
     tya                                                     ; fbe5: 98
     beq cfbdf                                               ; fbe6: f0 f7
     jsr cfaa3                                               ; fbe8: 20 a3 fa
-    bcs cfc46                                               ; fbeb: b0 59
+    bcs lfc46                                               ; fbeb: b0 59
     jsr cfad4                                               ; fbed: 20 d4 fa
     lda l220e,y                                             ; fbf0: b9 0e 22
-    bmi cfbb1                                               ; fbf3: 30 bc
+    bmi lfbb1                                               ; fbf3: 30 bc
     jsr cf965                                               ; fbf5: 20 65 f9
     tya                                                     ; fbf8: 98
     clc                                                     ; fbf9: 18
@@ -1830,7 +1901,7 @@ lf9b2 = cf9b1+1
     cmp l210d,x                                             ; fc2d: dd 0d 21
     bne cfc3a                                               ; fc30: d0 08
     jsr cf549                                               ; fc32: 20 49 f5
-    jsr cf8c5                                               ; fc35: 20 c5 f8
+    jsr default_SHTVEC                                      ; fc35: 20 c5 f8
     brk                                                     ; fc38: 00
 .cfc39
     pla                                                     ; fc39: 68
@@ -1839,12 +1910,14 @@ lf9b2 = cf9b1+1
     sta l2219,y                                             ; fc3d: 99 19 22
     lda l00c3                                               ; fc40: a5 c3
     sta l221a,y                                             ; fc42: 99 1a 22
-    equb &a9                                                ; fc45: .
-.cfc46
-    brk                                                     ; fc46: 00
-    equb &9d, &0c                                           ; fc47: ..
-    equs "! f"                                              ; fc49: 21 20 66
-    equb &f7, &20, &5b, &f2, &a4, &c2                       ; fc4c: . [...
+.cfc45
+lfc46 = cfc45+1
+    lda #&00                                                ; fc45: a9 00
+; overlapping: brk                                          ; fc46: 00
+    sta l210c,x                                             ; fc47: 9d 0c 21
+    jsr cf766                                               ; fc4a: 20 66 f7
+    jsr cf25b                                               ; fc4d: 20 5b f2
+    ldy l00c2                                               ; fc50: a4 c2
 .cfc52
     lda l2217,y                                             ; fc52: b9 17 22
     bmi cfc6e                                               ; fc55: 30 17
@@ -1880,10 +1953,11 @@ lf9b2 = cf9b1+1
     adc #&01                                                ; fc94: 69 01
     sta l2211,y                                             ; fc96: 99 11 22
     lda l2212,y                                             ; fc99: b9 12 22
-    equb &69                                                ; fc9c: i
-.cfc9d
-    brk                                                     ; fc9d: 00
-    equb &99, &12, &22                                      ; fc9e: .."
+.cfc9c
+lfc9d = cfc9c+1
+    adc #&00                                                ; fc9c: 69 00
+; overlapping: brk                                          ; fc9d: 00
+    sta l2212,y                                             ; fc9e: 99 12 22
 .cfca1
     tya                                                     ; fca1: 98
     jsr cfd21                                               ; fca2: 20 21 fd
@@ -1900,21 +1974,21 @@ lf9b2 = cf9b1+1
     jsr cfaf8                                               ; fcbe: 20 f8 fa
     jsr cf549                                               ; fcc1: 20 49 f5
     jmp cfb88                                               ; fcc4: 4c 88 fb
-.cfcc7
+.default_STRVEC
     pha                                                     ; fcc7: 48
     jsr cfaa3                                               ; fcc8: 20 a3 fa
-    bcs cfc9d                                               ; fccb: b0 d0
+    bcs lfc9d                                               ; fccb: b0 d0
     jsr cfad4                                               ; fccd: 20 d4 fa
     ldx l00c6                                               ; fcd0: a6 c6
     jsr cf139                                               ; fcd2: 20 39 f1
     jsr cfd39                                               ; fcd5: 20 39 fd
-    bcc cfd3d                                               ; fcd8: 90 63
+    bcc lfd3d                                               ; fcd8: 90 63
     ldy l00c2                                               ; fcda: a4 c2
 .cfcdc
     jsr cfd39                                               ; fcdc: 20 39 fd
     bcs cfce8                                               ; fcdf: b0 07
     lda #&ff                                                ; fce1: a9 ff
-    jsr cfbe3                                               ; fce3: 20 e3 fb
+    jsr default_BPTVEC                                      ; fce3: 20 e3 fb
     bne cfcdc                                               ; fce6: d0 f4
 .cfce8
     lda l0000,x                                             ; fce8: b5 00
@@ -1954,11 +2028,17 @@ lf9b2 = cf9b1+1
     rts                                                     ; fd38: 60
 .cfd39
     lda l2214,y                                             ; fd39: b9 14 22
-    equb &d5                                                ; fd3c: .
-.cfd3d
-    brk                                                     ; fd3d: 00
-    equb &b9, &15, &22, &f5, &01, &b9, &16, &22             ; fd3e: .."...."
-    equb &f5, &02, &60, &48                                 ; fd46: ..`H
+.cfd3c
+lfd3d = cfd3c+1
+    cmp l0000,x                                             ; fd3c: d5 00
+; overlapping: brk                                          ; fd3d: 00
+    lda l2215,y                                             ; fd3e: b9 15 22
+    sbc l0001,x                                             ; fd41: f5 01
+    lda l2216,y                                             ; fd43: b9 16 22
+    sbc l0002,x                                             ; fd46: f5 02
+    rts                                                     ; fd48: 60
+; The following 1-byte is unreachable
+    equb &48                                                ; fd49: H
 .cfd4a
     ora #&08                                                ; fd4a: 09 08
     and #&0a                                                ; fd4c: 29 0a
@@ -1966,9 +2046,9 @@ lf9b2 = cf9b1+1
 .cfd4f
     lsr a                                                   ; fd4f: 4a
     jsr cfd7e                                               ; fd50: 20 7e fd
-.cfd53
+.default_RDCVEC
     bit l0e21                                               ; fd53: 2c 21 0e
-    bpl cfd53                                               ; fd56: 10 fb
+    bpl default_RDCVEC                                      ; fd56: 10 fb
 .cfd58
     lda l0e21                                               ; fd58: ad 21 0e
     bmi cfd58                                               ; fd5b: 30 fb
@@ -1989,7 +2069,7 @@ lf9b2 = cf9b1+1
     lda (l00d2),y                                           ; fd76: b1 d2
     ldy l00d7                                               ; fd78: a4 d7
     rts                                                     ; fd7a: 60
-.cfd7b
+.default_WRCVEC
     jsr cfd8b                                               ; fd7b: 20 8b fd
 .cfd7e
     php                                                     ; fd7e: 08
@@ -2214,7 +2294,7 @@ lf9b2 = cf9b1+1
     ldy #&0d                                                ; fef4: a0 0d
 .cfef6
     sty l0800                                               ; fef6: 8c 00 08
-    lda lff8e,y                                             ; fef9: b9 8e ff
+    lda ctrc_table,y                                        ; fef9: b9 8e ff
     sta l0801                                               ; fefc: 8d 01 08
     dey                                                     ; feff: 88
     bpl cfef6                                               ; ff00: 10 f4
@@ -2223,11 +2303,11 @@ lf9b2 = cf9b1+1
     lda #&04                                                ; ff06: a9 04
     sta l00d0                                               ; ff08: 85 d0
     jmp cfe69                                               ; ff0a: 4c 69 fe
-.cff0d
+.rst_handler
     ldx #&19                                                ; ff0d: a2 19
 .cff0f
-    lda lff9c,x                                             ; ff0f: bd 9c ff
-    sta l0202,x                                             ; ff12: 9d 02 02
+    lda vector_table,x                                      ; ff0f: bd 9c ff
+    sta BRKVEC,x                                            ; ff12: 9d 02 02
     dex                                                     ; ff15: ca
     bpl cff0f                                               ; ff16: 10 f7
     txs                                                     ; ff18: 9a
@@ -2276,7 +2356,7 @@ lf9b2 = cf9b1+1
 .cff6d
     jsr print_string                                        ; ff6d: 20 09 f0
     equs "Acorn Dos", &0a                                   ; ff70: 41 63 6f ...
-.cff7a
+.default_BRKVEC
     ldx #&ff                                                ; ff7a: a2 ff
     txs                                                     ; ff7c: 9a
     jsr OSCRLF                                              ; ff7d: 20 ed ff
@@ -2287,13 +2367,20 @@ lf9b2 = cf9b1+1
 .lff89
     equs "BOOT"                                             ; ff89: 42 4f 4f ...
     equb &0d                                                ; ff8d: .
-.lff8e
+; 6845 CRTC register table
+; The default register values for the VDU40 teletext board
+.ctrc_table
     equb &3f, &28, &33, &44, &1e, &02, &19, &1b             ; ff8e: ?(3D....
     equb &03, &12, &72, &13, &04, &00                       ; ff96: ..r...
-.lff9c
-    equw cff7a, cf531, cf42e, cfd7b, cfd53, cf4c0, cf676    ; ff9c: 7a ff 31 ...
-    equw cfa88, cfcc7, cfb17, cfbe3, cf97a, cf8c5           ; ffa3: fd 53 fd ...
-.cffb6
+; Vector table
+; The default values for the vectors starting at 0202
+.vector_table
+    equw default_BRKVEC, default_IRQVEC, default_COMVEC     ; ff9c: 7a ff 31 ...
+    equw default_WRCVEC, default_RDCVEC, default_LODVEC     ; ff9f: f5 2e f4 ...
+    equw default_SAVVEC, default_RDRVEC, default_STRVEC     ; ffa2: 7b fd 53 ...
+    equw default_BGTVEC, default_BPTVEC, default_FNDVEC     ; ffa5: fd c0 f4 ...
+    equw default_SHTVEC                                     ; ffa8: 76 f6
+.irq_handler
     sta l00ff                                               ; ffb6: 85 ff
     pla                                                     ; ffb8: 68
     pha                                                     ; ffb9: 48
@@ -2301,30 +2388,30 @@ lf9b2 = cf9b1+1
     bne cffc4                                               ; ffbc: d0 06
     lda l00ff                                               ; ffbe: a5 ff
     pha                                                     ; ffc0: 48
-    jmp (l0204)                                             ; ffc1: 6c 04 02
+    jmp (IRQVEC)                                            ; ffc1: 6c 04 02
 .cffc4
     lda l00ff                                               ; ffc4: a5 ff
     plp                                                     ; ffc6: 28
     php                                                     ; ffc7: 08
-    jmp (l0202)                                             ; ffc8: 6c 02 02
+    jmp (BRKVEC)                                            ; ffc8: 6c 02 02
 .OSSHUT
-    jmp (l021a)                                             ; ffcb: 6c 1a 02
+    jmp (SHTVEC)                                            ; ffcb: 6c 1a 02
 .OSFIND
-    jmp (l0218)                                             ; ffce: 6c 18 02
+    jmp (FNDVEC)                                            ; ffce: 6c 18 02
 .OSBPUT
-    jmp (l0216)                                             ; ffd1: 6c 16 02
+    jmp (BPTVEC)                                            ; ffd1: 6c 16 02
 .OSBGET
-    jmp (l0214)                                             ; ffd4: 6c 14 02
+    jmp (BGTVEC)                                            ; ffd4: 6c 14 02
 .OSSTAR
-    jmp (l0212)                                             ; ffd7: 6c 12 02
+    jmp (STRVEC)                                            ; ffd7: 6c 12 02
 .OSRDAR
-    jmp (l0210)                                             ; ffda: 6c 10 02
+    jmp (RDRVEC)                                            ; ffda: 6c 10 02
 .OSSAVE
-    jmp (l020e)                                             ; ffdd: 6c 0e 02
+    jmp (SAVVEC)                                            ; ffdd: 6c 0e 02
 .OSLOAD
-    jmp (l020c)                                             ; ffe0: 6c 0c 02
+    jmp (LODVEC)                                            ; ffe0: 6c 0c 02
 .OSRDCH
-    jmp (l020a)                                             ; ffe3: 6c 0a 02
+    jmp (RDCVEC)                                            ; ffe3: 6c 0a 02
 .OSECHO
     jsr OSRDCH                                              ; ffe6: 20 e3 ff
 .OSASCI
@@ -2336,17 +2423,22 @@ lf9b2 = cf9b1+1
 .OSWRCR
     lda #&0d                                                ; fff2: a9 0d
 .OSWRCH
-    jmp (l0208)                                             ; fff4: 6c 08 02
+    jmp (WRCVEC)                                            ; fff4: 6c 08 02
 .OSCLI
-    jmp (l0206)                                             ; fff7: 6c 06 02
-    equw cf897, cff0d, cffb6                                ; fffa: 97 f8 0d ...
+    jmp (COMVEC)                                            ; fff7: 6c 06 02
+.NMIVECTOR
+    equw nmi_handler                                        ; fffa: 97 f8
+.RSTVECTOR
+    equw rst_handler                                        ; fffc: 0d ff
+.IRQVECTOR
+    equw irq_handler                                        ; fffe: b6 ff
 .pydis_end
 
 ; Label references by decreasing frequency:
 ;     print_string:             14
 ;     OSWRCH:                   14
 ;     cf130:                     9
-;     cf25b:                     7
+;     cf25b:                     9
 ;     cf04a:                     6
 ;     cf121:                     6
 ;     cf549:                     6
@@ -2356,13 +2448,14 @@ lf9b2 = cf9b1+1
 ;     cf0e1:                     5
 ;     cf192:                     5
 ;     cf62f:                     5
+;     cf766:                     5
 ;     cf825:                     5
 ;     cfe6b:                     5
 ;     cf0e9:                     4
 ;     cf135:                     4
 ;     cf1f0:                     4
 ;     cf62c:                     4
-;     cf766:                     4
+;     cf800:                     4
 ;     cfaa3:                     4
 ;     cfaf8:                     4
 ;     cfd21:                     4
@@ -2379,13 +2472,13 @@ lf9b2 = cf9b1+1
 ;     cf7c0:                     3
 ;     cf7ee:                     3
 ;     cf7f7:                     3
-;     cf800:                     3
 ;     cf809:                     3
-;     cf8c5:                     3
+;     default_SHTVEC:            3
 ;     cf8d5:                     3
 ;     cf965:                     3
 ;     lf981:                     3
 ;     cfad4:                     3
+;     cfb88:                     3
 ;     cfb8e:                     3
 ;     cfb9d:                     3
 ;     cfe21:                     3
@@ -2425,8 +2518,11 @@ lf9b2 = cf9b1+1
 ;     cf845:                     2
 ;     cf9ec:                     2
 ;     cfac4:                     2
-;     cfb88:                     2
+;     cfadc:                     2
+;     cfb06:                     2
 ;     cfb8c:                     2
+;     cfb93:                     2
+;     cfb95:                     2
 ;     cfba5:                     2
 ;     cfc6a:                     2
 ;     cfc6e:                     2
@@ -2444,6 +2540,7 @@ lf9b2 = cf9b1+1
 ;     OSFIND:                    2
 ;     OSECHO:                    2
 ;     l00f3:                     1
+;     l00f6:                     1
 ;     cf011:                     1
 ;     cf017:                     1
 ;     cf026:                     1
@@ -2513,6 +2610,7 @@ lf9b2 = cf9b1+1
 ;     cf4ca:                     1
 ;     cf4cd:                     1
 ;     cf4d0:                     1
+;     cf4ec:                     1
 ;     cf4f1:                     1
 ;     cf4f6:                     1
 ;     cf4fb:                     1
@@ -2523,6 +2621,7 @@ lf9b2 = cf9b1+1
 ;     cf55f:                     1
 ;     cmd_EXEC:                  1
 ;     cf574:                     1
+;     cf58d:                     1
 ;     cf5cb:                     1
 ;     cf5d1:                     1
 ;     cf5fc:                     1
@@ -2539,6 +2638,7 @@ lf9b2 = cf9b1+1
 ;     cf6e4:                     1
 ;     cf6ef:                     1
 ;     cf710:                     1
+;     cf713:                     1
 ;     cf72f:                     1
 ;     cf735:                     1
 ;     cf743:                     1
@@ -2589,31 +2689,31 @@ lf9b2 = cf9b1+1
 ;     cfac1:                     1
 ;     cfac3:                     1
 ;     cfac8:                     1
-;     cfadc:                     1
+;     cfb02:                     1
 ;     cfb0e:                     1
 ;     cfb37:                     1
 ;     cfb3b:                     1
 ;     cfb50:                     1
-;     cfb5b:                     1
-;     cfb7c:                     1
-;     cfb93:                     1
-;     cfb95:                     1
+;     lfb5b:                     1
+;     lfb7c:                     1
 ;     cfb98:                     1
-;     cfbb1:                     1
+;     lfbb1:                     1
+;     cfbd3:                     1
+;     cfbd9:                     1
 ;     cfbde:                     1
 ;     cfbdf:                     1
-;     cfbe3:                     1
+;     default_BPTVEC:            1
 ;     cfc39:                     1
 ;     cfc3a:                     1
-;     cfc46:                     1
+;     lfc46:                     1
 ;     cfc52:                     1
-;     cfc9d:                     1
+;     lfc9d:                     1
 ;     cfca1:                     1
 ;     cfcbe:                     1
 ;     cfcdc:                     1
 ;     cfce8:                     1
-;     cfd3d:                     1
-;     cfd53:                     1
+;     lfd3d:                     1
+;     default_RDCVEC:            1
 ;     cfd58:                     1
 ;     cfd72:                     1
 ;     cfd7e:                     1
@@ -2649,7 +2749,9 @@ lf9b2 = cf9b1+1
 ;     cff6a:                     1
 ;     cff80:                     1
 ;     cffc4:                     1
+;     OSSHUT:                    1
 ;     OSBPUT:                    1
+;     OSBGET:                    1
 ;     OSSAVE:                    1
 ;     OSRDCH:                    1
 ;     OSASCI:                    1
@@ -2675,6 +2777,9 @@ lf9b2 = cf9b1+1
     assert <(cmd_UNKNOWN) == &0e
     assert <(cmd_UNLOCK) == &e3
     assert <(cmd_USE) == &f8
+    assert <nmi_other == &45
+    assert <rdch_exec == &7c
+    assert <wrch_spool == &a2
     assert >(cmd_CAT) == &f2
     assert >(cmd_DELETE) == &f4
     assert >(cmd_DIR) == &f2
@@ -2696,21 +2801,24 @@ lf9b2 = cf9b1+1
     assert >(cmd_UNKNOWN) == &f5
     assert >(cmd_UNLOCK) == &f5
     assert >(cmd_USE) == &f5
-    assert cf42e == &f42e
-    assert cf4c0 == &f4c0
-    assert cf531 == &f531
-    assert cf676 == &f676
-    assert cf897 == &f897
-    assert cf8c5 == &f8c5
-    assert cf97a == &f97a
-    assert cfa88 == &fa88
-    assert cfb17 == &fb17
-    assert cfbe3 == &fbe3
-    assert cfcc7 == &fcc7
-    assert cfd53 == &fd53
-    assert cfd7b == &fd7b
-    assert cff0d == &ff0d
-    assert cff7a == &ff7a
-    assert cffb6 == &ffb6
+    assert >nmi_other == &f7
+    assert >rdch_exec == &f5
+    assert >wrch_spool == &f5
+    assert default_BGTVEC == &fb17
+    assert default_BPTVEC == &fbe3
+    assert default_BRKVEC == &ff7a
+    assert default_COMVEC == &f42e
+    assert default_FNDVEC == &f97a
+    assert default_IRQVEC == &f531
+    assert default_LODVEC == &f4c0
+    assert default_RDCVEC == &fd53
+    assert default_RDRVEC == &fa88
+    assert default_SAVVEC == &f676
+    assert default_SHTVEC == &f8c5
+    assert default_STRVEC == &fcc7
+    assert default_WRCVEC == &fd7b
+    assert irq_handler == &ffb6
+    assert nmi_handler == &f897
+    assert rst_handler == &ff0d
 
 save pydis_start, pydis_end
